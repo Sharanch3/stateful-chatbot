@@ -1,0 +1,17 @@
+langchain
+langchain-core
+langchain-community
+langchain-groq
+
+langgraph
+langgraph-checkpoint-sqlite
+
+duckduckgo-search
+
+# langchain-mcp-adapters
+
+
+ipykernel
+python-dotenv
+
+streamlit
