@@ -1,5 +1,7 @@
 import os
-from langgraph.checkpoint.memory import InMemorySaver
+import sqlite3
+from pathlib import Path
+from langgraph.checkpoint.sqlite import SqliteSaver
 from typing import TypedDict, Annotated, List
 from langgraph.graph import StateGraph, START
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -17,7 +19,10 @@ MODEL = "openai/gpt-oss-120b"
 TEMPERATURE = 0.3
 MAX_TOKEN = 2000
 API_KEY = os.getenv("GROQ_API_KEY")
+DB_PATH = Path(__file__).parent.parent / "chatbot.db"
 
+
+checkpointer = None
 
 
 
@@ -45,46 +50,63 @@ def llm_init():
 
 #GRAPH
 def build_graph():
+    global checkpointer
 
-    llm = llm_init()
+    if checkpointer is None:
+        llm = llm_init()
 
-    tools = [search_tool, calculator, get_stock_price]
-    
-    llm_with_tools = llm.bind_tools(tools= tools)
+        tools = [search_tool, calculator, get_stock_price]
+        
+        llm_with_tools = llm.bind_tools(tools= tools)
 
-    #CHATNODE-
-    def chatnode(state: ChatState) ->ChatState:
+        #CHATNODE-
+        def chatnode(state: ChatState) ->ChatState:
 
-        messages = state['messages']
+            messages = state['messages']
 
-        response = llm_with_tools.invoke(messages)
+            response = llm_with_tools.invoke(messages)
 
-        return {'messages': [response]}
-    
+            return {'messages': [response]}
+        
 
-    #TOOLNODE-
-    toolnode = ToolNode(tools= tools)
+        #TOOLNODE-
+        toolnode = ToolNode(tools= tools)
 
 
-    #GRAPH-
-    builder = StateGraph(ChatState)
-    checkpointer = InMemorySaver()
+        #GRAPH-
+        builder = StateGraph(ChatState)
 
-    builder.add_node('chatnode', chatnode)
-    builder.add_node('tools', toolnode)
+        conn = sqlite3.connect(database= str(DB_PATH), check_same_thread= False)
+        checkpointer = SqliteSaver(conn= conn)
 
-    builder.add_edge(START, 'chatnode')
-    builder.add_conditional_edges('chatnode', tools_condition)
-    builder.add_edge('tools', 'chatnode')
+        builder.add_node('chatnode', chatnode)
+        builder.add_node('tools', toolnode)
 
-    chatbot = builder.compile(checkpointer= checkpointer)
+        builder.add_edge(START, 'chatnode')
+        builder.add_conditional_edges('chatnode', tools_condition)
+        builder.add_edge('tools', 'chatnode')
 
-    
-    return chatbot
+        chatbot = builder.compile(checkpointer= checkpointer)
+
+        
+        return chatbot
 
 
 
 chatbot = build_graph()
+
+
+
+def fetch_all_threads():
+
+    all_threads = set()
+
+    for checkpoint in checkpointer.list(None):
+        all_threads.add(checkpoint.config['configurable']['thread_id'])
+
+    return list(all_threads)
+
+
 
 
 
@@ -95,11 +117,11 @@ if __name__ == "__main__":
 
     chatbot = build_graph()
 
-    # initial_state = {'messages': HumanMessage(content="What is the current stock of apple?")}
+    initial_state = {'messages': HumanMessage(content="What is the current stock of apple?")}
     
-    # response = chatbot.invoke(initial_state, config=CONFIG)
+    response = chatbot.invoke(initial_state, config=CONFIG)
     
-    # print(response['messages'][-1].content)
+    print(response['messages'][-1].content)
 
     #=========================STREAMING FEATURE===================================
     stream_generator = chatbot.stream(

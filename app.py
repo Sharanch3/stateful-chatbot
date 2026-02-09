@@ -1,5 +1,5 @@
 import streamlit as st
-from src.backend import chatbot
+from src.backend import chatbot, fetch_all_threads
 from langchain_core.messages import HumanMessage
 from src.utils import (
     generate_new_thread,
@@ -21,7 +21,7 @@ if "thread_id" not in st.session_state:
 
 #Allows users to switch between multiple chat histories
 if "chat_threads" not in st.session_state:
-    st.session_state["chat_threads"] = []
+    st.session_state["chat_threads"] = fetch_all_threads()
 
 # Adds the current thread ID to the list of threads
 add_thread(st.session_state["thread_id"])
