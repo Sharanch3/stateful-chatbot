@@ -6,6 +6,12 @@ This project demonstrates how to build a **production-style conversational agent
 
 ---
 
+## 🌐 Live Demo
+
+**LINK** -> 
+
+---
+
 ## 🚀 Features
 
 ### 🔄 Real-Time Streaming
@@ -42,9 +48,6 @@ This project demonstrates how to build a **production-style conversational agent
 - Clean, interactive chat interface  
 - Sidebar for chat thread management  
 - Real-time response rendering  
-
----
-
 
 ---
 
