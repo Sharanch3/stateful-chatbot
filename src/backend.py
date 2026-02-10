@@ -18,7 +18,7 @@ load_dotenv()
 MODEL = "openai/gpt-oss-120b"
 TEMPERATURE = 0.3
 MAX_TOKEN = 2000
-API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 DB_PATH = Path(__file__).parent.parent / "chatbot.db"
 
 
@@ -40,7 +40,7 @@ def llm_init():
         model= MODEL,
         temperature= TEMPERATURE,
         max_tokens= MAX_TOKEN,
-        api_key= API_KEY
+        api_key= GROQ_API_KEY
         
     )
 
