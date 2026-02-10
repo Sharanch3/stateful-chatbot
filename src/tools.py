@@ -1,12 +1,17 @@
 import requests
+from dotenv import load_dotenv
 from langchain_core.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
 
+load_dotenv()
 
 
+
+#SEARCH TOOL-
 search_tool = DuckDuckGoSearchRun()
 
 
+#CALCULATOR TOOL-
 @tool
 def calculator(first_num: float, second_num: float, operation:str) ->dict:
     """
@@ -37,7 +42,7 @@ def calculator(first_num: float, second_num: float, operation:str) ->dict:
 
 
 
-
+#STOCT PRICE TOOL-
 @tool
 def get_stock_price(symbol: str) ->dict:
     """
@@ -51,5 +56,17 @@ def get_stock_price(symbol: str) ->dict:
     response = requests.get(url)
 
     return response.json()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
